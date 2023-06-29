@@ -1,0 +1,3 @@
+Malloc is a function that receives a number of bytes to be allocated in memory
+and returns a pointer to the beginning of the memory block that can hold the specified number of bytes.
+In case it cannot allocate the requested space it returns NULL.
