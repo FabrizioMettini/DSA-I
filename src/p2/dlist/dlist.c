@@ -32,6 +32,7 @@ void dlist_add_first(DList * list, int data) {
   DNode *newNode = malloc(sizeof(DNode));
   assert(newNode != NULL);
   newNode->data = data;
+  newNode->prev = NULL;
   newNode->next = list->first;
 
 
