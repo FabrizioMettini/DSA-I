@@ -1,0 +1,3 @@
+It's not possible
+We can think the board colored like in chess, then every domino piece covers a white cell and a black cell.
+Since we remove two opposites corners, these have the same color, so we have 
