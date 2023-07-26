@@ -1,10 +1,7 @@
 #ifndef __HASHTABLE_H__
 #define __HASHTABLE_H__
 
-typedef void *(*CopyFunction)(void *data);
-typedef int (*CompareFunction)(void *data1, void *data2);
-typedef void (*DestroyFunction)(void *data);
-typedef unsigned (*HashFunction)(void *data);
+#include "common.h"
 
 typedef struct _Hashtable *Hashtable;
 

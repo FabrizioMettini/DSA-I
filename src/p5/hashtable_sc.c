@@ -1,14 +1,13 @@
+#include "glist.h"
 #include "hashtable.h"
 
 #include <assert.h>
 #include <stdlib.h>
 
-typedef struct {
-  void *data;
-} HashtableCell;
+typedef GList Bucket;
 
 struct _Hashtable {
-  HashtableCell *elems;
+  Bucket *elems;
   unsigned nelems;
   unsigned capacity;
   CopyFunction copy;
@@ -24,7 +23,7 @@ Hashtable hashtable_create(unsigned capacity, CopyFunction copy,
   Hashtable ht = malloc(sizeof(struct _Hashtable));
   assert(ht != NULL);
 
-  ht->elems = malloc(sizeof(HashtableCell) * capacity);
+  ht->elems = malloc(sizeof(Bucket) * capacity);
   assert(ht->elems != NULL);
 
   ht->nelems = 0;
@@ -35,7 +34,7 @@ Hashtable hashtable_create(unsigned capacity, CopyFunction copy,
   ht->hash = hash;
 
   for (unsigned idx = 0; idx < capacity; ++idx)
-    ht->elems[idx].data = NULL;
+    ht->elems[idx] = glist_create();
 
   return ht;
 }
@@ -46,55 +45,34 @@ int hashtable_capacity(Hashtable ht) { return ht->capacity; }
 
 void hashtable_destroy(Hashtable ht) {
   for (unsigned idx = 0; idx < ht->capacity; ++idx)
-    if (ht->elems[idx].data != NULL)
-      ht->destr(ht->elems[idx].data);
+    glist_destroy(ht->elems[idx], ht->destr);
   free(ht->elems);
   free(ht);
 }
 
 void hashtable_insert(Hashtable ht, void *data) {
   unsigned idx = ht->hash(data) % ht->capacity;
-
-  if (ht->elems[idx].data == NULL) {
+  
+  int deleted = 0;
+  ht->elems[idx] = glist_delete(ht->elems[idx], data, ht->comp, ht->destr, &deleted);
+  
+  if (!deleted)
     ht->nelems++;
-    ht->elems[idx].data = ht->copy(data);
-    return;
-  }
-
-  else if (ht->comp(ht->elems[idx].data, data) == 0) {
-    ht->destr(ht->elems[idx].data);
-    ht->elems[idx].data = ht->copy(data);
-    return;
-  }
-
-  else {
-    return;
-  }
+  
+  ht->elems[idx] = glist_add_first(ht->elems[idx], data, ht->copy);
 }
 
 void *hashtable_search(Hashtable ht, void *data) {
   unsigned idx = ht->hash(data) % ht->capacity;
-
-  if (ht->elems[idx].data == NULL)
-    return NULL;
-
-  else if (ht->comp(ht->elems[idx].data, data) == 0)
-    return ht->elems[idx].data;
-
-  else
-    return NULL;
+  return glist_search(ht->elems[idx], data, ht->comp);
 }
 
 void hashtable_delete(Hashtable ht, void *data) {
   unsigned idx = ht->hash(data) % ht->capacity;
 
-  if (ht->elems[idx].data == NULL)
-    return;
+  int deleted = 0;
+  ht->elems[idx] = glist_delete(ht->elems[idx], data, ht->comp, ht->destr, &deleted);
 
-  else if (ht->comp(ht->elems[idx].data, data) == 0) {
+  if (deleted)
     ht->nelems--;
-    ht->destr(ht->elems[idx].data);
-    ht->elems[idx].data = NULL;
-    return;
-  }
 }

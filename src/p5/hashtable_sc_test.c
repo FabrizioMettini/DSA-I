@@ -21,7 +21,7 @@ int main() {
   contact_list[4] = contact_create("Maria Elena Fuseneco", "3416874594", 59);
   contact_list[5] = contact_create("Dardo Fuseneco", "3416894526", 64);
 
-  puts("Insertion:");
+  printf("Insertion:\n");
   for (int i = 0; i < 6; ++i) {
     printf("Inserting contact: ");
     contact_print(contact_list[i]);
@@ -37,7 +37,7 @@ int main() {
       printf("\tSuccess.\n");
   }
 
-  puts("Search:");
+  printf("\nSearch:\n");
   for (int i = 0; i < 6; ++i) {
     printf("Searching contact: ");
     contact_print(contact_list[i]);
@@ -59,7 +59,7 @@ int main() {
     hashtable_delete(ht, contact_list[i]);
   }
 
-  puts("Search:");
+  printf("\nSearch:\n");
   for (int i = 0; i < 6; ++i) {
     printf("Searching contact: ");
     contact_print(contact_list[i]);
@@ -82,7 +82,6 @@ int main() {
 
   hashtable_insert(ht, newContact);
 
-  // Chequeamos que se haya sobrescrito
   Contact *ret = hashtable_search(
       ht, contact_list[0]);
   printf("New contact is: ");
