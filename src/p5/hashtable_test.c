@@ -36,7 +36,6 @@ int main() {
     else
       printf("\tSuccess.\n");
   }
-
   printf("\nSearch:\n");
   for (int i = 0; i < 6; ++i) {
     printf("Searching contact: ");

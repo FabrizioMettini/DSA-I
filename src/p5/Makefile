@@ -1,9 +1,12 @@
-FLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -gstabs
+FLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -g
 
-test: hashtable_sc_test.o hashtable_sc.o glist.o contact.o utils.o
+test: hashtable_test.o hashtable_lp.o glist.o contact.o utils.o
 	$(CC) -o $@ $^ $(FLAGS)
 
-hashtable_sc_test.o: hashtable_sc_test.c hashtable.h contact.h
+hashtable_test.o: hashtable_test.c hashtable.h contact.h
+	$(CC) -c $< $(FLAGS)
+
+hashtable_lp.o: hashtable_lp.c hashtable.h glist.h common.h
 	$(CC) -c $< $(FLAGS)
 
 hashtable_sc.o: hashtable_sc.c hashtable.h glist.h common.h
@@ -19,7 +22,7 @@ utils.o: utils.c utils.h
 	$(CC) -c $< $(FLAGS)
 
 memory_test: test
-	valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all -s ./test
+	valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all ./test
 
 clean:
 	rm -f *.o
