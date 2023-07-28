@@ -3,48 +3,56 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#define N_WORDS 16
+#define N_NUMS 6
 
-static void *copy_string(void *data) {
-  char *str = malloc(sizeof(char) * (strlen(data) + 1));
-  assert(str != NULL);
-  strcpy(str, data);
-  return str;
+static int *copy_integer_pointer(int *n) {
+  int *m = malloc(sizeof(int));
+  *m = *n;
+  return m;
 }
-static int compare_string(void *data1, void *data2) {
-  return strcmp(data1, data2);
+
+static int compare_integer_pointer(int *n, int *m) {
+  return *n == *m ? 0 : *n > *m ? 1 : -1;
 }
-static void destroy_string(void *data) { free(data); }
-static void print_string(void *data, __attribute__((unused)) void *extra) {
-  printf("\"%s\" ", (char *)data);
+
+static void destroy_integer_pointer(int *n) {
+  free(n);
+}
+
+static void print_integer_pointer(int *n, __attribute__((unused)) void *extra) {
+  printf("%d ", *n);
 }
 
 int main() {
-  char *words[N_WORDS] = {"cat",      "dog",    "house",     "person",
-                          "park",    "tree",    "building", "street",
-                          "argentina", "santa fe", "rosario",  "unr",
-                          "edya",      "farmacy", "time",   "phone"};
+  int numbers[N_NUMS] = {5, 3, 8, 7, 4, 1};
 
   BSTree tree = bstree_create();
-  for (int i = 0; i < N_WORDS; i++)
-    tree = bstree_insert(tree, words[i], copy_string, compare_string);
 
-  printf("INORDER: ");
-  bstree_traverse(tree, BSTREE_TRAVERSE_IN, print_string, NULL);
+  for (int i = 0; i < N_NUMS; i++) {
+    tree = bstree_insert(tree, &numbers[i], (CopyFunction) copy_integer_pointer, 
+                         (CompareFunction) compare_integer_pointer);  
+  }
+
+  puts("INORDER:");
+  bstree_traverse_extra(tree, BSTREE_TRAVERSE_IN, 
+                        (VisitExtraFunction) print_integer_pointer, NULL);
   puts("");
 
-  assert(bstree_search(tree, "farmacy", compare_string) == 1);
-  assert(bstree_search(tree, "santa fe", compare_string) == 1);
-  assert(bstree_search(tree, "person", compare_string) == 1);
-  assert(bstree_search(tree, "unr", compare_string) == 1);
-  assert(bstree_search(tree, "argentina", compare_string) == 1);
-  assert(bstree_search(tree, "telephone", compare_string) == 0);
-  assert(bstree_search(tree, "mail", compare_string) == 0);
-  assert(bstree_search(tree, "EDyA1", compare_string) == 0);
+  assert(compare_integer_pointer(bstree_kth_smallest(tree, 3), &numbers[0]) == 0);
 
-  bstree_destroy(tree, destroy_string);
+  tree = bstree_delete(tree, &numbers[0], 
+                       (CompareFunction) compare_integer_pointer, 
+                       (DestroyFunction) destroy_integer_pointer);
+
+  puts("INORDER: (after deleting 5)");
+  bstree_traverse_extra(tree, BSTREE_TRAVERSE_IN, 
+                        (VisitExtraFunction) print_integer_pointer, NULL);
+  puts("");
+
+  assert(bstree_validate(tree, (CompareFunction) compare_integer_pointer));
+
+  bstree_destroy(tree, (DestroyFunction) destroy_integer_pointer);
 
   return 0;
 }
