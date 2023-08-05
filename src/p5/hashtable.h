@@ -13,7 +13,11 @@ int hashtable_nelems(Hashtable ht);
 
 int hashtable_capacity(Hashtable ht);
 
+double hashtable_load_factor(Hashtable ht);
+
 void hashtable_destroy(Hashtable ht);
+
+void hashtable_resize(Hashtable ht);
 
 void hashtable_insert(Hashtable ht, void *data);
 

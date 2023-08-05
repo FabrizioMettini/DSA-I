@@ -1,8 +1,9 @@
-#include "glist.h"
 #include "hashtable.h"
 
 #include <assert.h>
 #include <stdlib.h>
+
+#define LOAD_FACTOR 0.6
 
 typedef struct _Bucket {
   void *data;
@@ -52,6 +53,10 @@ int hashtable_nelems(Hashtable ht) { return ht->nelems; }
 
 int hashtable_capacity(Hashtable ht) { return ht->capacity; }
 
+double hashtable_load_factor(Hashtable ht) { 
+  return (double) ht->nelems / ht->capacity;
+}
+
 void hashtable_destroy(Hashtable ht) {
   for (unsigned idx = 0; idx < ht->capacity; ++idx)
     if (ht->elems[idx].data != NULL)
@@ -60,7 +65,35 @@ void hashtable_destroy(Hashtable ht) {
   free(ht);
 }
 
+void hashtable_resize(Hashtable ht) {
+  Bucket *oldElems = ht->elems;
+
+  unsigned oldCapacity = ht->capacity;
+  unsigned newCapacity = ht->capacity * 2;
+
+  ht->elems = malloc(sizeof(Bucket) * newCapacity);
+  assert(ht->elems != NULL);
+  ht->nelems = 0;
+  ht->capacity = newCapacity;
+
+  for (unsigned idx = 0; idx < newCapacity; idx++) {
+    ht->elems[idx].data = NULL;
+    ht->elems[idx].deleted = 0;
+  }
+
+  for (unsigned idx = 0; idx < oldCapacity; idx++)
+    if (oldElems[idx].data != NULL) {
+      hashtable_insert(ht, oldElems[idx].data);
+      ht->destr(oldElems[idx].data);
+    }
+
+  free(oldElems);
+}
+
 void hashtable_insert(Hashtable ht, void *data) {
+  if (hashtable_load_factor(ht) > LOAD_FACTOR)
+    hashtable_resize(ht);
+
   unsigned idx = ht->hash(data) % ht->capacity;
 
   while (!bucket_empty(ht->elems[idx])) {
@@ -103,5 +136,6 @@ void hashtable_delete(Hashtable ht, void *data) {
     ht->destr(ht->elems[idx].data);
     ht->elems[idx].data = NULL;
     ht->elems[idx].deleted = 1;
+    ht->nelems--;
   }
 }

@@ -18,7 +18,7 @@ int glist_empty(GList list);
 
 GList glist_add_first(GList list, void *data, CopyFunction copy);
 
-void glist_traverse(GList list, VisitFunction visitar);
+void glist_traverse(GList list, VisitExtraFunction visit, void *extra);
 
 GList glist_filter(GList list, CopyFunction c, Predicate p);
 

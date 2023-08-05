@@ -1,12 +1,12 @@
 FLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -g
 
-test: hashtable_test.o hashtable_lp.o glist.o contact.o utils.o
+test: hashtable_test.o hashtable_sc.o glist.o contact.o utils.o
 	$(CC) -o $@ $^ $(FLAGS)
 
 hashtable_test.o: hashtable_test.c hashtable.h contact.h
 	$(CC) -c $< $(FLAGS)
 
-hashtable_lp.o: hashtable_lp.c hashtable.h glist.h common.h
+hashtable_lp.o: hashtable_lp.c hashtable.h common.h
 	$(CC) -c $< $(FLAGS)
 
 hashtable_sc.o: hashtable_sc.c hashtable.h glist.h common.h

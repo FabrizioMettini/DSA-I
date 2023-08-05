@@ -4,6 +4,8 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#define LOAD_FACTOR 0.6
+
 typedef GList Bucket;
 
 struct _Hashtable {
@@ -43,6 +45,10 @@ int hashtable_nelems(Hashtable ht) { return ht->nelems; }
 
 int hashtable_capacity(Hashtable ht) { return ht->capacity; }
 
+double hashtable_load_factor(Hashtable ht) { 
+  return (double) ht->nelems / ht->capacity;
+}
+
 void hashtable_destroy(Hashtable ht) {
   for (unsigned idx = 0; idx < ht->capacity; ++idx)
     glist_destroy(ht->elems[idx], ht->destr);
@@ -50,7 +56,32 @@ void hashtable_destroy(Hashtable ht) {
   free(ht);
 }
 
+void hashtable_resize(Hashtable ht) {
+  Bucket *oldElems = ht->elems;
+
+  unsigned oldCapacity = ht->capacity;
+  unsigned newCapacity = ht->capacity * 2;
+
+  ht->elems = malloc(sizeof(Bucket) * newCapacity);
+  assert(ht->elems != NULL);
+  ht->nelems = 0;
+  ht->capacity = newCapacity;
+
+  for (unsigned idx = 0; idx < newCapacity; idx++)
+    ht->elems[idx] = glist_create();
+
+  for (unsigned idx = 0; idx < oldCapacity; idx++) {
+    glist_traverse(oldElems[idx], (VisitExtraFunction) hashtable_insert, ht);
+    glist_destroy(oldElems[idx], ht->destr);
+  }
+
+  free(oldElems);
+}
+
 void hashtable_insert(Hashtable ht, void *data) {
+  if (hashtable_load_factor(ht) > LOAD_FACTOR)
+    hashtable_resize(ht);
+
   unsigned idx = ht->hash(data) % ht->capacity;
   
   int deleted = 0;

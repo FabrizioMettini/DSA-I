@@ -25,9 +25,9 @@ GList glist_add_first(GList list, void *data, CopyFunction copy) {
   return newNode;
 }
 
-void glist_traverse(GList list, VisitFunction visit) {
+void glist_traverse(GList list, VisitExtraFunction visit, void *extra) {
   for (GNode *node = list; node != NULL; node = node->next)
-    visit(node->data);
+    visit(extra, node->data);
 }
 
 GList glist_filter(GList list, CopyFunction c, Predicate p) {
