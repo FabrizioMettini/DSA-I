@@ -22,6 +22,8 @@ int avl_search(AVL, void *);
 
 void avl_insert(AVL, void *);
 
+void avl_delete(AVL, void *);
+
 int avl_validate(AVL);
 
 void avl_traverse(AVL, AVLTraverseOrder, VisitExtraFunction, void *);

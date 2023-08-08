@@ -28,6 +28,7 @@ AVL avl_create(CopyFunction copy, CompareFunction comp,
   avl->destr = destr;
   return avl;
 }
+
 static void avl_node_destroy(AVL_Node *root, DestroyFunction destr) {
   if (root != NULL) {
     avl_node_destroy(root->left, destr);
@@ -36,6 +37,7 @@ static void avl_node_destroy(AVL_Node *root, DestroyFunction destr) {
     free(root);
   }
 }
+
 void avl_destroy(AVL avl) {
   avl_node_destroy(avl->root, avl->destr);
   free(avl);
@@ -143,6 +145,81 @@ static AVL_Node *avl_node_insert(AVL_Node *root, void *data,
 
 void avl_insert(AVL avl, void *data) {
   avl->root = avl_node_insert(avl->root, data, avl->copy, avl->comp);
+}
+
+static AVL_Node *avl_node_successor_father(AVL_Node *root) {
+  while (root->left->left != NULL) 
+    root = root->left;
+  return root;
+}
+
+static AVL_Node *avl_node_delete(AVL_Node *root, void *data,
+                                 DestroyFunction destr, 
+                                 CompareFunction comp) {
+
+  if (root == NULL)
+    return NULL;
+
+  int ans = comp(root->data, data);
+
+  if (ans > 0)
+    root->left = avl_node_delete(root->left, data, destr, comp);
+
+  else if (ans < 0)
+    root->right = avl_node_delete(root->right, data, destr, comp);
+
+  else {
+    if (root->left == NULL && root->right == NULL) {
+      destr(root->data);
+      free(root);
+      return NULL;
+    }
+
+    else if (root->left != NULL && root->right != NULL) {
+      AVL_Node *successorFather = avl_node_successor_father(root->right);
+      AVL_Node *successor = successorFather->left;
+  
+      successorFather->left = successor->right;
+      successor->left = root->left;
+      successor->right = root->right;
+
+      destr(root->data);
+      free(root);
+
+      successorFather->height = 1 + avl_node_max_height_children(successorFather);
+      successor->height = 1 + avl_node_max_height_children(successor);
+      return successor;
+    }
+
+    else {
+      AVL_Node *aux = root->left == NULL ? root->right : root->left;
+      destr(root->data);
+      free(root);
+      return aux;
+    }
+  }
+
+  root->height = 1 + avl_node_max_height_children(root);
+  
+  if (avl_node_balance_factor(root) == -2) {
+    if (avl_node_balance_factor(root->left) == 1)
+      root->left = avl_node_simple_left_rotation(root->left);
+    root = avl_node_simple_right_rotation(root);
+    root->height = 1 + avl_node_max_height_children(root);
+  }
+
+  if (avl_node_balance_factor(root) == 2) {
+    if (avl_node_balance_factor(root->right) == -1)
+      root->right = avl_node_simple_right_rotation(root->right);
+    root = avl_node_simple_left_rotation(root);
+    root->height = 1 + avl_node_max_height_children(root);
+  }
+
+  return root;
+}  
+
+void avl_delete(AVL avl, void *data) {
+  avl->root = avl_node_delete(avl->root, data, avl->destr, avl->comp);
 }
 
 static int avl_node_validate_bst(AVL_Node *root, void *min, void *max,
