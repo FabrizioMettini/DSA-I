@@ -18,7 +18,7 @@ static void destroy_int_ptr(int *ptr_n) {
 }
 
 static int compare_int_ptr(int *ptr_n, int *ptr_m) {
-  return *ptr_n > *ptr_m;
+  return *ptr_n == *ptr_m ? 0 : *ptr_n > *ptr_m ? 1 : -1;
 }
 
 static void print_int_ptr(int *ptr_n) {

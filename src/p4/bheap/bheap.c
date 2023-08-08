@@ -44,7 +44,7 @@ BHeap bheap_insert(BHeap bheap, void *data, CopyFunction copy) {
   bheap->arr[bheap->last] = copy(data); 
 
   int j = bheap->last; 
-  while (j > 1 && bheap->comp(bheap->arr[j], bheap->arr[j/2])) {
+  while (j > 1 && bheap->comp(bheap->arr[j], bheap->arr[j/2]) > 0) {
     void *temp = bheap->arr[j];
     bheap->arr[j] = bheap->arr[j/2];
     bheap->arr[j/2] = temp;
@@ -69,10 +69,10 @@ BHeap bheap_delete(BHeap bheap, DestroyFunction destroy) {
   while (2*j <= bheap->last && isGreater) {
     int k = 2 * j;
 
-    if (k + 1 <= bheap->last && bheap->comp(bheap->arr[k+1], bheap->arr[k]))
+    if (k + 1 <= bheap->last && bheap->comp(bheap->arr[k+1], bheap->arr[k]) > 0)
       k += 1;
 
-    if (bheap->comp(bheap->arr[j], bheap->arr[k]))
+    if (bheap->comp(bheap->arr[j], bheap->arr[k]) > 0)
       isGreater = 0;
     else {
       void *temp = bheap->arr[j];
